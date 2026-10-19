@@ -203,9 +203,13 @@
       </main>
 
       <aside class="result-column" aria-labelledby="result-title">
-        <h2 id="result-title">Ваше ТЗ</h2>
+        <div class="result-header">
+          <h2 id="result-title">Ваше ТЗ</h2>
+          <button type="button" class="btn btn-secondary" id="copy-btn" disabled>Скопировать ТЗ</button>
+        </div>
         <label for="result" class="visually-hidden">Текст собранного технического задания</label>
         <textarea id="result" class="result-area" rows="28" spellcheck="true" placeholder="Здесь появится собранное ТЗ после нажатия «Собрать ТЗ». Вы сможете отредактировать текст перед использованием."></textarea>
+        <p class="copy-status" id="copy-status" role="status" aria-live="polite" hidden></p>
         <p class="result-hint">Проверьте документ, дополните детали и вставьте его в Cursor или другое приложение для разработки.</p>
       </aside>
     </div>

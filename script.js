@@ -5,9 +5,12 @@
   var actionsList = document.getElementById("actions-list");
   var addActionBtn = document.getElementById("add-action");
   var clearBtn = document.getElementById("clear-btn");
+  var copyBtn = document.getElementById("copy-btn");
+  var copyStatus = document.getElementById("copy-status");
   var resultArea = document.getElementById("result");
   var actionIdCounter = 0;
   var lastBuiltDocument = "";
+  var copyStatusTimer = null;
 
   function trimValue(value) {
     return (value || "").trim();
@@ -498,6 +501,101 @@
     return false;
   }
 
+  function clearCopyStatus() {
+    if (copyStatusTimer) {
+      window.clearTimeout(copyStatusTimer);
+      copyStatusTimer = null;
+    }
+    copyStatus.hidden = true;
+    copyStatus.textContent = "";
+    copyStatus.classList.remove("is-success", "is-manual");
+  }
+
+  function showCopyStatus(message, mode, autoHide) {
+    copyStatus.hidden = false;
+    copyStatus.textContent = message;
+    copyStatus.classList.remove("is-success", "is-manual");
+    if (mode) {
+      copyStatus.classList.add(mode);
+    }
+    if (copyStatusTimer) {
+      window.clearTimeout(copyStatusTimer);
+      copyStatusTimer = null;
+    }
+    if (autoHide) {
+      copyStatusTimer = window.setTimeout(function () {
+        clearCopyStatus();
+      }, 4000);
+    }
+  }
+
+  function updateCopyButtonState() {
+    copyBtn.disabled = !hasContent(resultArea.value);
+    if (!hasContent(resultArea.value)) {
+      clearCopyStatus();
+    }
+  }
+
+  function selectResultText() {
+    resultArea.focus();
+    resultArea.select();
+    resultArea.setSelectionRange(0, resultArea.value.length);
+  }
+
+  function copyWithExecCommand(text) {
+    var previouslyReadOnly = resultArea.readOnly;
+    resultArea.readOnly = false;
+    selectResultText();
+    var succeeded = false;
+    try {
+      succeeded = document.execCommand("copy");
+    } catch (err) {
+      succeeded = false;
+    }
+    resultArea.readOnly = previouslyReadOnly;
+    return succeeded;
+  }
+
+  function showManualCopyInstruction() {
+    selectResultText();
+    showCopyStatus(
+      "Автоматическое копирование недоступно. Текст выделен — нажмите Ctrl+C (на Mac: ⌘C), затем вставьте туда, где нужно.",
+      "is-manual",
+      false
+    );
+  }
+
+  function copyResultText() {
+    var text = resultArea.value;
+    if (!hasContent(text)) {
+      updateCopyButtonState();
+      return;
+    }
+
+    clearCopyStatus();
+
+    function onSuccess() {
+      showCopyStatus("ТЗ скопировано", "is-success", true);
+    }
+
+    if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+      navigator.clipboard.writeText(text).then(onSuccess).catch(function () {
+        if (copyWithExecCommand(text)) {
+          onSuccess();
+        } else {
+          showManualCopyInstruction();
+        }
+      });
+      return;
+    }
+
+    if (copyWithExecCommand(text)) {
+      onSuccess();
+    } else {
+      showManualCopyInstruction();
+    }
+  }
+
   function resetForm() {
     form.reset();
     clearAllErrors();
@@ -506,6 +604,8 @@
     createActionRow();
     resultArea.value = "";
     lastBuiltDocument = "";
+    clearCopyStatus();
+    updateCopyButtonState();
 
     form.querySelector('input[name="productType"][value="Сайт"]').checked = true;
     form.querySelector('input[name="device"][value="Компьютер и телефон"]').checked = true;
@@ -549,11 +649,21 @@
     var documentText = buildDocument(data);
     resultArea.value = documentText;
     lastBuiltDocument = documentText;
+    clearCopyStatus();
+    updateCopyButtonState();
 
     if (window.matchMedia("(max-width: 899px)").matches) {
       resultArea.scrollIntoView({ behavior: "smooth", block: "start" });
     }
     resultArea.focus();
+  });
+
+  copyBtn.addEventListener("click", function () {
+    copyResultText();
+  });
+
+  resultArea.addEventListener("input", function () {
+    updateCopyButtonState();
   });
 
   clearBtn.addEventListener("click", function () {
@@ -599,4 +709,5 @@
   });
 
   createActionRow();
+  updateCopyButtonState();
 })();
