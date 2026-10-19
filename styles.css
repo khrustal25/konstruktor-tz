@@ -1,5 +1,5 @@
 :root {
-  --bg: #faf8f5;
+  --bg: #e8f1f8;
   --bg-paper: #fffdf9;
   --bg-block: #f3efe8;
   --ink: #2c2416;
@@ -39,8 +39,8 @@ body {
   color: var(--ink);
   background-color: var(--bg);
   background-image:
-    radial-gradient(ellipse at top left, rgba(196, 92, 38, 0.06), transparent 45%),
-    radial-gradient(ellipse at bottom right, rgba(44, 36, 22, 0.04), transparent 40%),
+    radial-gradient(ellipse at top left, rgba(120, 170, 210, 0.12), transparent 45%),
+    radial-gradient(ellipse at bottom right, rgba(90, 140, 180, 0.08), transparent 40%),
     repeating-linear-gradient(
       0deg,
       transparent,
